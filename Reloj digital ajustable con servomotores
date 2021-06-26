@@ -1,0 +1,202 @@
+// C++ code
+//
+
+//Incluyo bibliotecas "LiquidCrystal.h" y "Servo.h"
+#include<LiquidCrystal.h>
+#include<Servo.h>
+
+
+//////////////////////////////////////
+/////////////VARIABLES///////////////
+/////////////////////////////////////
+
+
+//LCD
+LiquidCrystal lcd(0, 1, 2, 3, 4, 5); 
+
+
+//Reloj
+int horas = 23;
+int minutos = 59;
+int segundos = 50;
+
+
+//Variables para verificar el estado de los botones
+int botonHorasAntes = LOW;
+int botonMinutosAntes = LOW;
+int botonSegundosAntes = LOW;
+
+
+//Servomotores
+Servo servoHoras;
+Servo servoMinutos;
+Servo servoSegundos;
+
+void setup()
+{
+  //Inicializo los botones
+  for(int i=6; i<=8; i++){
+  	pinMode(i, INPUT);
+  }
+  
+  //Inicializo servomotores
+  servoHoras.attach(11);
+  servoMinutos.attach(10);
+  servoSegundos.attach(9);
+  
+  //Inicializo LCD
+  lcd.begin(16, 2);
+  lcd.setCursor(3, 1);
+  lcd.print("00:00:00");
+}
+
+//Defino contador y variable estado
+int contador = segundos;
+long ultimaVezQueActualiceContador = 0;
+
+void loop()
+{
+  //Configuro contador que permita empezar a contar los segundos (utilizo funcion millis)
+  long millisActual = millis();
+  if(millisActual - 1000 > ultimaVezQueActualiceContador)
+  {
+    contador++;
+    ultimaVezQueActualiceContador = millisActual;
+  }
+  
+  //Inicializo y leo botones
+  int botonHoras = digitalRead(8);
+  int botonMinutos = digitalRead(7);
+  int botonSegundos = digitalRead(6);
+  
+  /*Verifico si algun boton se mantuvo apretado, en caso de estarlo aumento
+  en 1 su respectiva variable*/
+  if(botonHoras == HIGH && botonHorasAntes == LOW)
+  {
+  	horas++;
+  }
+  	if(botonMinutos == HIGH && botonMinutosAntes == LOW)
+  	{
+  		minutos++;
+  	}
+ 	   if(botonSegundos == HIGH && botonSegundosAntes == LOW)
+  	  {
+  		  segundos++;
+    	  contador++;
+  	  }
+  
+  //Ejecuto la funcion reloj
+  reloj();
+  
+  /*Asigno a las variables de estado el valor de las variables que guardan 
+  la lectura de los botones*/
+  botonHorasAntes = botonHoras;
+  botonMinutosAntes = botonMinutos;
+  botonSegundosAntes = botonSegundos;
+  
+  //delay(949);
+
+}
+
+
+////////////////////////////////////
+/////////////FUNCIONES//////////////
+////////////////////////////////////
+
+
+/*La funcion reloj contiene dentro todas las funciones 
+relacionadas al mismo
+*/
+void reloj()
+{
+  
+  /*Verifico que los datos guardados en variables cumplan 
+  las condiciones Ej: (minutos > 0 && minutos < 59)*/
+   if(segundos < 0)
+  {
+    segundos = 0;
+  }
+  else if(segundos == 59)
+  {
+    minutos++;
+    contador = 0;
+    segundos = 0;
+  }
+  
+  if(minutos < 0)
+  {
+    minutos = 0;
+  }
+  else if(minutos > 59) 
+  {
+    minutos = 0 ;
+    horas++;
+  }
+
+  //Llamo a la funcion ajustarRelojHoras para que valide las horas
+  horas = ajustarRelojHoras(horas, 23);
+  
+  //Asigno el valor de contador a segundos
+  segundos = contador;
+  
+  /*Envio los datos ya validados a mostrarValor y a servo,
+  configuro el desplazamiento de los servomotores de acuerdo a sus 
+  respectivas variables*/
+  
+  mostrarValor(segundos,9);
+  servoSegundos.write(servo(segundos,59));
+  mostrarValor(minutos,6);
+  servoMinutos.write(servo(minutos,59));
+  mostrarValor(horas,3);
+  servoHoras.write(servo(horas,23));
+}
+
+/*
+  Funcion para mostrar el valor de cada sector del reloj.
+  Recibe 2 int, la variable a mostrar y el numero del cursor
+*/
+void mostrarValor(int num, int cursor){
+  lcd.setCursor(cursor,1);
+  if(num < 10)
+  {
+    lcd.print("0");
+  }
+  
+  lcd.print(num);
+  delay(20);
+}
+
+/*
+  Funcion que permite validar las horas del reloj, ya sea que 
+  este por encima o por debajo del rango correspondiente.
+  Recibe 2 int, el valor y el maximo a validar, en caso de que 
+  no pase la validacion retorna un 0 de lo contrario retorna 
+  el numero ya validado.
+*/
+int ajustarRelojHoras(int num, int max)
+{
+  int resultado;
+  if(num < 0 || num > max)
+  {
+    resultado = 0;
+  }
+  else
+  {
+    resultado = num;
+  }
+  
+  return resultado;
+}
+
+/*
+  Funcion que ajusta el servomotor en base a la variable que 
+  representa.
+  Recibe 2 int, el valor que representa y su maximo, y 
+  retorna un int con el angulo que debe tomar.
+*/
+
+int servo(int numero, int max)
+{
+  int resultado = map(numero, 0, max, 0, 180);
+  return resultado;
+}
