@@ -11,27 +11,27 @@ namespace Practica_Logica
         static void Main(string[] args)
         {
             string aux;
-            int auxInt;
+            int n;
             Console.WriteLine("Escriba un numero");
             aux = Console.ReadLine();
 
-            int.TryParse(aux, out auxInt);
+            int.TryParse(aux, out n);
 
-            if(auxInt % 3 == 0 && auxInt % 5 == 0)
+            if(n % 3 == 0 && n % 5 == 0)
             {
-                Console.WriteLine("El numero {0} es multiplo de 3 y de 5", auxInt);
-            }else if(auxInt %3 == 0 && !(auxInt % 5 == 0))
+                Console.WriteLine("FizzBuzz");
+            }else if(n %3 == 0 && !(n % 5 == 0))
                 {
-                Console.WriteLine("El numero {0} es multilpo de 3 pero NO de 5", auxInt);              
+                Console.WriteLine("Fizz");              
                 }
-            else if(!(auxInt % 3 == 0) && auxInt % 5 == 0)
+            else if(!(n % 3 == 0) && n % 5 == 0)
                 {
-                Console.WriteLine("El numero {0} es multilpo de 5 pero no de 3", auxInt);
+                Console.WriteLine("Buzz");
                 }
             else
             {
-            Console.WriteLine("El numero {0} no es multiplo ni de 3 ni de 5", auxInt);
-            }
+            Console.WriteLine("{0}", n);
+            }  
            
         }
     }
